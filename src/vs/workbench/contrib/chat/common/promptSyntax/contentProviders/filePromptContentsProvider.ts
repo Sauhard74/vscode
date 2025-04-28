@@ -93,6 +93,8 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 		// get the binary stream of the file contents
 		let fileStream;
 		try {
+			// TODO: @legomushroom
+			console.log(`[file contents provider]: reading file '${this.uri.path}'/'${this.uri.fsPath}'`);
 			// ensure that the referenced URI points to a file before
 			// trying to get a stream for its contents
 			const info = await this.fileService.resolve(this.uri);
@@ -116,6 +118,9 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 				throw new NotPromptFile(this.uri);
 			}
 
+			// TODO: @legomushroom
+			console.log(`[file contents provider]: reading stream '${this.uri.path}'/'${this.uri.fsPath}'`);
+
 			fileStream = await this.fileService.readFileStream(this.uri);
 
 			// after the promise above complete, this object can be already disposed or
@@ -126,8 +131,14 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 				throw new CancellationError();
 			}
 
+			// TODO: @legomushroom
+			console.log(`[file contents provider]: returning stream`);
+
 			return fileStream.value;
 		} catch (error) {
+			// TODO: @legomushroom
+			console.log(`[file contents provider]: error`, error);
+
 			if ((error instanceof ResolveError) || (error instanceof CancellationError)) {
 				throw error;
 			}

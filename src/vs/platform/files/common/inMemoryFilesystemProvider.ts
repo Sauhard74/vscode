@@ -209,19 +209,49 @@ export class InMemoryFileSystemProvider extends Disposable implements
 		}
 	}
 
+	// TODO: @legomushroom
+	public enableLog = false;
+
 	async mkdir(resource: URI): Promise<void> {
+		if (this.enableLog) {
+			console.log(`[mkdir] creating folder '${resource.fsPath}'`);
+		}
+
+		if (this.enableLog) {
+			console.log(`[mkdir] looking up '${resource.fsPath}'`);
+		}
+
 		if (this._lookup(resource, true)) {
 			throw createFileSystemProviderError('file exists already', FileSystemProviderErrorCode.FileExists);
 		}
 
 		const basename = resources.basename(resource);
 		const dirname = resources.dirname(resource);
+
+		if (this.enableLog) {
+			console.log(`[mkdir] looking up '${dirname}'`);
+		}
+
 		const parent = this._lookupAsDirectory(dirname, false);
 
+		if (this.enableLog) {
+			console.log(`[mkdir] creating directory object '${resource.fsPath}'`);
+		}
+
 		const entry = new Directory(basename);
+
+		if (this.enableLog) {
+			console.log(`[mkdir] created entry '${resource.fsPath}'`, entry);
+		}
+
 		parent.entries.set(entry.name, entry);
 		parent.mtime = Date.now();
 		parent.size += 1;
+
+		if (this.enableLog) {
+			console.log(`[mkdir] fire event '${resource.fsPath}'`);
+		}
+
 		this._fireSoon({ type: FileChangeType.UPDATED, resource: dirname }, { type: FileChangeType.ADDED, resource });
 	}
 

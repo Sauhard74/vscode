@@ -8,6 +8,7 @@ import { ChatMode } from '../../constants.js';
 import { PromptHeader } from './promptHeader/header.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { PromptToken } from '../codecs/tokens/promptToken.js';
+import * as paths from '../../../../../../base/common/path.js';
 import { ChatPromptCodec } from '../codecs/chatPromptCodec.js';
 import { Emitter } from '../../../../../../base/common/event.js';
 import { FileReference } from '../codecs/tokens/fileReference.js';
@@ -360,9 +361,23 @@ export class BasePromptParser<TContentsProvider extends IPromptContentsProvider>
 	): this {
 		const { parentFolder } = this;
 
+		console.log(`[onReference] parentFolder: '${parentFolder}', token: ${token.path}`);
+
+		if (parentFolder) {
+			console.log(`[onReference] new path: '${URI.file(paths.resolve(parentFolder.path, token.path)).path}' / '${URI.file(paths.resolve(parentFolder.path, token.path)).fsPath}'`);
+		}
+
 		const referenceUri = (parentFolder !== null)
 			? extUri.resolvePath(parentFolder, token.path)
 			: URI.file(token.path);
+
+		// TODO: @legomushroom
+		console.log(
+			[
+				`[onReference] path: '${token.path}', parent folder: '${parentFolder?.path}', ref: '${referenceUri.path}'`,
+			].join('\n'),
+			seenReferences,
+		);
 
 		const contentProvider = this.promptContentsProvider.createNew({ uri: referenceUri });
 

@@ -6,6 +6,9 @@
 import { URI } from '../../../../../../../base/common/uri.js';
 import { assert } from '../../../../../../../base/common/assert.js';
 import { VSBuffer } from '../../../../../../../base/common/buffer.js';
+// TODO: @legomushroom
+// import { extUri } from '../../../../../../../base/common/resources.js';
+import { extUri } from '../../../../../../../base/common/resources.js';
 import { wait } from '../../../../../../../base/test/common/testUtils.js';
 import { IFileService } from '../../../../../../../platform/files/common/files.js';
 
@@ -74,17 +77,23 @@ export class MockFilesystem {
 		parentFolder?: URI,
 	): Promise<TWithURI<IMockFolder>> {
 		const folderUri = parentFolder
-			? URI.joinPath(parentFolder, folder.name)
+			? extUri.resolvePath(parentFolder, folder.name)
 			: URI.file(folder.name);
 
-		assert(
-			!(await this.fileService.exists(folderUri)),
-			`Folder '${folderUri.path}' already exists.`,
-		);
+		// TODO: @legomushroom
+		if (parentFolder) {
+			assert(
+				!(await this.fileService.exists(folderUri)),
+				`Folder '${folderUri.path}' already exists.`,
+			);
+		}
 
 		try {
+			console.log(`[mock] creating folder: '${folderUri.path}' | '${folderUri.fsPath}'`);
 			await this.fileService.createFolder(folderUri);
+			console.log(`[mock] created folder: '${folderUri.path}' | '${folderUri.fsPath}'`);
 		} catch (error) {
+			console.log('[mock][error]', error);
 			throw new Error(`Failed to create folder '${folderUri.fsPath}': ${error}.`);
 		}
 
@@ -102,7 +111,9 @@ export class MockFilesystem {
 					? child.contents
 					: child.contents.join('\n');
 
+				console.log(`[mock] creating file: '${childUri.path}' | '${childUri.fsPath}'`);
 				await this.fileService.writeFile(childUri, VSBuffer.fromString(contents));
+				console.log(`[mock] created file: '${childUri.path}' | '${childUri.fsPath}'`);
 
 				resolvedChildren.push({
 					...child,

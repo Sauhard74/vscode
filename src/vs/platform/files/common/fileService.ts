@@ -952,12 +952,19 @@ export class FileService extends Disposable implements IFileService {
 	async createFolder(resource: URI): Promise<IFileStatWithMetadata> {
 		const provider = this.throwIfFileSystemIsReadonly(await this.withProvider(resource), resource);
 
+		// TODO: @legomushroom
+		this.enableLog && console.log(`[createFolder] creating folder ${resource.fsPath}`);
 		// mkdir recursively
 		await this.mkdirp(provider, resource);
+		this.enableLog && console.log(`[createFolder] created folder ${resource.fsPath}`);
 
 		// events
 		const fileStat = await this.resolve(resource, { resolveMetadata: true });
+		this.enableLog && console.log(`[createFolder] stat-ed resource ${resource.fsPath}`);
+
 		this._onDidRunOperation.fire(new FileOperationEvent(resource, FileOperation.CREATE, fileStat));
+
+		this.enableLog && console.log(`[createFolder] done ${resource.fsPath}`);
 
 		return fileStat;
 	}
@@ -995,8 +1002,12 @@ export class FileService extends Disposable implements IFileService {
 			directory = providerExtUri.joinPath(directory, directoriesToCreate[i]);
 
 			try {
+				this.enableLog && console.log(`[mkdirp] creating folder '${directory.fsPath}'`);
 				await provider.mkdir(directory);
+				this.enableLog && console.log(`[mkdirp] created folder '${directory.fsPath}'`);
 			} catch (error) {
+				this.enableLog && console.log(`[mkdirp] error creating folder '${directory.fsPath}': ${error}`);
+
 				if (toFileSystemProviderErrorCode(error) !== FileSystemProviderErrorCode.FileExists) {
 					// For mkdirp() we tolerate that the mkdir() call fails
 					// in case the folder already exists. This follows node.js
@@ -1066,6 +1077,9 @@ export class FileService extends Disposable implements IFileService {
 
 		return provider;
 	}
+
+	// TODO: @legomushroom
+	public enableLog: boolean = false;
 
 	async del(resource: URI, options?: Partial<IFileDeleteOptions>): Promise<void> {
 		const provider = await this.doValidateDelete(resource, options);

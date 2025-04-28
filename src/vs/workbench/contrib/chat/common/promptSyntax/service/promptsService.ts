@@ -97,7 +97,22 @@ export class PromptsService extends Disposable implements IPromptsService {
 			'Cannot create a prompt syntax parser for a disposed model.',
 		);
 
-		return this.cache.get(model);
+		// TODO: @legomushroom
+		const parser = this.cache.get(model);
+
+		parser.allSettled()
+			.then((result) => {
+				console.log(`[getSyntaxParserFor][then] all settled`, parser.allErrors);
+				return result;
+			})
+			.catch((error) => {
+				console.log(`[getSyntaxParserFor][catch] all settled`, parser.allErrors);
+
+				return error;
+			});
+
+
+		return parser;
 	}
 
 	public async listPromptFiles(type: TPromptsType): Promise<readonly IPromptPath[]> {
